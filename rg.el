@@ -57,6 +57,8 @@
 (require 'rg-result)
 (require 'rg-info-hack)
 (require 'subr-x)
+(require 's)
+(require 'dash)
 (require 'vc)
 (require 'files-x)
 
@@ -311,7 +313,7 @@ are command line flags to use for the search."
                   (if (functionp rg-command-line-flags)
                       (funcall rg-command-line-flags)
                     rg-command-line-flags))
-          (mapcar #'rg-quote-flag flags)
+          (mapcar #'rg-quote-flag (rg-expand-glob-flag flags))
 
 
           (list
@@ -849,6 +851,17 @@ Returns forms for binding function with NAME into rg-menu."
      (2 font-lock-function-name-face nil t))))
 
 (font-lock-add-keywords 'emacs-lisp-mode rg-elisp-font-lock-keywords)
+
+(defun rg-expand-glob-flag (flags)
+  "Looks for a `--glob=foo|||bar` and transforms into two `--glob=foo` and `--glob=bar`"
+  (-mapcat (lambda (el)
+             (if (s-starts-with? "--glob=" el)
+                 (->> el
+                      (s-chop-prefix "--glob=")
+                      (s-split "|||")
+                      (--map (s-concat "--glob=" it)))
+               (list el)))
+           flags))
 
 ;;;###autoload
 (defmacro rg-define-search (name &rest args)

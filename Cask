@@ -21,6 +21,7 @@
  (depends-on "flycheck")
  (depends-on "package-lint")
  (depends-on "s")
+ (depends-on "dash")
  (depends-on "seq")
  (depends-on "transient")
  (depends-on "undercover")
